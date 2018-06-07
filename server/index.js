@@ -46,6 +46,7 @@ require('dotenv').config();
     const db=app.get('db')
     // this asks passport to retrieve the value tied to db, which is set above
     let{id, displayName, picture}=profile;
+    // the id used here is the auth_id from the database
     db.find_user([id]).then(user=>{
         // we are getting info back from our sql table, whic is usally an object, but nested in an array
         if(user[0]){
@@ -59,23 +60,35 @@ require('dotenv').config();
  }));
 //  after you set the above step up, create auth0 app and add infor to .env
 
-passport.serializeUser((id, done)=>{
-    done(null, id);
+passport.serializeUser((primaryKeyId, done)=>{
+    done(null, primaryKeyId);
        //  the above profile object is added to the session store
 })
 
-passport.deserializeUser((id, done)=>{
+passport.deserializeUser((primaryKeyId, done)=>{
     // goes into session store, grabs any value tied to the session(ie profile) and injects info into the callback
     // whatever we pass out of deserializeUser gets added to req.user
     // deserializeUser runs as middleware
-    done(null, id);
+    app.get("db").find_session_user([primaryKeyId]).then(user=>{
+        done(null, user[0])
+        // this returns all the info for the user
+    })
 })
 
 app.get('/auth', passport.authenticate('auth0'))
 app.get('/auth/callback', passport.authenticate('auth0', {
     // redirect the user to the front end back where they started the login
-    successRedirect: 'http://localhost:3000'
+    successRedirect: 'http://localhost:3000/#/private'
+    // use the hash symbol above because we are using HashRouter
 }))
+
+app.get('/auth/user', (req, res)=>{
+    if(req.user){
+        res.status(200).send(req.user);
+    }else{
+        res.status(401).send('Unauthorized user');
+    }
+})
 
 
  app.listen(SERVER_PORT, ()=>{
