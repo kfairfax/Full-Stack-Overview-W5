@@ -71,7 +71,7 @@ passport.deserializeUser((primaryKeyId, done)=>{
     // deserializeUser runs as middleware
     app.get("db").find_session_user([primaryKeyId]).then(user=>{
         done(null, user[0])
-        // this returns all the info for the user
+        // this returns all the info for the user, which is put on req.user
     })
 })
 
@@ -88,6 +88,12 @@ app.get('/auth/user', (req, res)=>{
     }else{
         res.status(401).send('Unauthorized user');
     }
+})
+
+app.get('/auth/logout', (req, res)=>{
+    req.logOut();
+    // this is a built in method in passport that kills the session and resets the user property, which is somethign that req.session.destroy() does not do
+    res.redirect('http://localhost:3000');
 })
 
 
