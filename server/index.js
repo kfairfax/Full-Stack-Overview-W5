@@ -17,6 +17,8 @@ require('dotenv').config();
 
  const app=express();
 
+ app.use(express.static(__dirname + './../build'))
+
  massive(CONNECTION_STRING).then(db=>{
     //  app.set is a way of storing some information where you can add it by saying to set info on key: val pair essentially
      app.set('db', db);
@@ -78,7 +80,7 @@ passport.deserializeUser((primaryKeyId, done)=>{
 app.get('/auth', passport.authenticate('auth0'))
 app.get('/auth/callback', passport.authenticate('auth0', {
     // redirect the user to the front end back where they started the login
-    successRedirect: 'http://localhost:3000/#/private'
+    successRedirect: 'http://localhost:3005/#/private'
     // use the hash symbol above because we are using HashRouter
 }))
 
@@ -93,7 +95,7 @@ app.get('/auth/user', (req, res)=>{
 app.get('/auth/logout', (req, res)=>{
     req.logOut();
     // this is a built in method in passport that kills the session and resets the user property, which is somethign that req.session.destroy() does not do
-    res.redirect('http://localhost:3000');
+    res.redirect('http://localhost:3005');
 })
 
 
